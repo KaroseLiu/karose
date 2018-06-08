@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style media="screen">
+    .count { 
+      font-size: 30px;
+      border: 1px solid blueviolet;
+      padding: 20px;
+      cursor: pointer;
+      width: 200px;
+      text-align: center;
+      border-radius: 10px;
+    }
+    .number {
+      font-weight: bold;
+      font-size: 35px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+<script type="text/javascript">
+
+  class Component {
+    constructor(props = {}) {
+      this.props = props
+    }
+    createDomByString(stringDom) {
+      var div = document.createElement('div')
+      div.innerHTML = stringDom
+      return div
+    }
+    setState(state) {
+      var oldElement = this.el
+      this.state = state
+      this.el = this.renderDom()
+      if (this.onStateChange && typeof this.onStateChange === 'function') {
+        this.onStateChange(this.el, oldElement)
+      }
+    }
+    renderDom() {
+      if(typeof this.render === 'function') {
+        this.el = this.createDomByString(this.render())
+        if(this.handleClick) {
+          this.el.addEventListener('click', this.handleClick.bind(this))
+        }
+      }
+      return this.el
+    }
+  }
+
+  class DayCount extends Component {
+    constructor(props) {
+      super(props)
+      this.state = 1
+    }
+    handleClick() {
+      this.setState(++this.state)
+    }
+    render() {
+      return `
+        <div class="count">
+          <span>${this.props.title || '减肥'}</span>
+          <span class="number">${this.state}</span>
+          <span>天✅</span>
+        </div>
+      `
+    }
+  }
+
+  var renderRoot = function(rootDom, instanceCom) {
+    rootDom.appendChild(instanceCom.renderDom())
+    instanceCom.onStateChange = function(newEl, oldEl) {
+      rootDom.insertBefore(newEl, oldEl)
+      rootDom.removeChild(oldEl)
+    }
+  }
+
+  var rootDom = document.getElementById('root')
+  var shangBanCom = new DayCount({title: '上班'})
+  renderRoot(rootDom, shangBanCom)
+
+  var jianshenCom = new DayCount({title: '健身'})
+  renderRoot(rootDom, jianshenCom)
+
+</script>
+</html>
